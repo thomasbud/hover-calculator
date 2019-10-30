@@ -8,21 +8,21 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 {
     public Text answerDisplay;
 
-    public double value;
-    public double oldValue;
-    public string op;
-    public string oldOp;
-    public double answer;
+    public static double value;
+    public static double oldValue;
+    public static string op;
+    public static string oldOp;
+    public static double answer;
     public double progress;
     public double maxTime;
-    public bool opPerformed;
-    public bool eqPerformed;
-    public bool decFlag;
-    public bool negFlag;
-    public bool clearNext;
-    public bool numPressed;
+    public static bool opPerformed;
+    public static bool eqPerformed;
+    public static bool decFlag;
+    public static bool negFlag;
+    public static bool clearNext;
+    public static bool numPressed;
     public bool hovering;
-    public bool succ;
+    public static bool succ;
     public Renderer rend;
     // Start is called before the first frame update
     void Start()
@@ -243,9 +243,9 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         maxTime = 1;
         if (hovering)
         {
-            Debug.Log("is progress less than max time?");
-            Debug.Log(progress);
-            Debug.Log(maxTime);
+            //Debug.Log("is progress less than max time?");
+            //Debug.Log(progress);
+            //Debug.Log(maxTime);
             if (progress < maxTime)
             {
                 progress += Time.deltaTime;
