@@ -4,33 +4,48 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class Calculator : MonoBehaviour, IPointerEnterHandler
+public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public Text answerDisplay;
 
     public double value;
     public double oldValue;
     public string op;
+    public string oldOp;
     public double answer;
+    public double progress;
+    public double maxTime;
     public bool opPerformed;
+    public bool eqPerformed;
+    public bool decFlag;
+    public bool negFlag;
+    public bool clearNext;
+    public bool numPressed;
+    public bool hovering;
+    public bool succ;
     public Renderer rend;
     // Start is called before the first frame update
     void Start()
     {
         answerDisplay.text = "";
         opPerformed = false;
+        eqPerformed = false;
+        clearNext = false;
+        progress = 0.0;
+        maxTime = 10.0;
+        op = "";
         rend = GetComponent<Renderer>();
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("The cursor entered the selectable UI element.");
-        //eventData.
-        //answerDisplay.text = EventSystem.current.currentSelectedGameObject.GetComponentInChildren<Text>().text;
-        Debug.Log(eventData.pointerCurrentRaycast.gameObject.GetComponentInChildren<Text>().text);
-        //answerDisplay.text = "hello";
+        hovering = true;
         EventSystem.current.SetSelectedGameObject(eventData.pointerCurrentRaycast.gameObject);
-        //numberClick();
-        //answerDisplay.text = eventData.pointerCurrentRaycast.gameObject.GetComponentInChildren<Text>().text;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        hovering = false;
+        progress = 0.0f;
     }
 
     // ...the red fades out to cyan as the mouse is held over...
@@ -39,72 +54,122 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler
     //    rend.material.color -= new Color(0.1F, 0, 0) * Time.deltaTime;
     //}
 
-
     public void numberClick()
     {
-        //Debug.Log("hi");
-        if (opPerformed)
+        Debug.Log("called number click from update");
+        if (clearNext)
         {
             answerDisplay.text = "";
-            opPerformed = false;
+            //opPerformed = false;
+            clearNext = false;
         }
-        //Debug.Log(PointerEventData.);
-        
+        Debug.Log(EventSystem.current.currentSelectedGameObject.GetComponentInChildren<Text>().text);
+
         answerDisplay.text += EventSystem.current.currentSelectedGameObject.GetComponentInChildren<Text>().text;
         value = double.Parse(answerDisplay.text);
-        
+        numPressed = true;
+
     }
 
     public void operationClick()
     {
+        oldOp = op;
         op = EventSystem.current.currentSelectedGameObject.GetComponentInChildren<Text>().text;
-        oldValue = value;
+
         if (opPerformed)
         {
-            switch (op)
+            switch (oldOp)
             {
                 case "+":
                     answer = oldValue + value;
+                    oldValue = answer;
                     answerDisplay.text = "";
                     answerDisplay.text = answer.ToString();
                     break;
                 case "-":
                     answer = oldValue - value;
+                    oldValue = answer;
                     answerDisplay.text = "";
                     answerDisplay.text = answer.ToString();
                     break;
                 case "x":
                     answer = oldValue * value;
+                    oldValue = answer;
                     answerDisplay.text = "";
                     answerDisplay.text = answer.ToString();
                     break;
                 case "/":
                     answer = oldValue / value;
+                    oldValue = answer;
                     answerDisplay.text = "";
                     answerDisplay.text = answer.ToString();
                     break;
             }
         }
+        else
+        {
+            if (!eqPerformed)
+            {
+                oldValue = value;
+            }
+        }
         opPerformed = true;
+        decFlag = false;
+        negFlag = false;
+        clearNext = true;
+        numPressed = false;
 
-        
     }
 
-    public void clearClick() {
+    public void clearClick()
+    {
         answerDisplay.text = "";
+        value = 0;
+        oldValue = 0;
+        op = "";
+        oldOp = "";
+        opPerformed = false;
+        eqPerformed = false;
+        decFlag = false;
+        negFlag = false;
+        clearNext = false;
+        numPressed = false;
     }
 
-    public void minusClick() {
-        answerDisplay.text += "-";
+    public void minusClick()
+    {
+        if (clearNext)
+        {
+            answerDisplay.text = "";
+            clearNext = false;
+        }
+        if (!negFlag && !numPressed && !decFlag)
+        {
+            answerDisplay.text += "-";
+            negFlag = true;
+        }
+
     }
 
-    public void decimalClick() {
-        answerDisplay.text += ".";
+    public void decimalClick()
+    {
+        if (clearNext)
+        {
+            answerDisplay.text = "";
+            clearNext = false;
+        }
+        if (!decFlag)
+        {
+            answerDisplay.text += ".";
+            decFlag = true;
+        }
     }
 
-    public void deleteClick() {
-        if (answerDisplay.text.Length > 0) {
-            answerDisplay.text = answerDisplay.text.Substring(0, answerDisplay.text.Length-1);
+    public void deleteClick()
+    {
+        if (answerDisplay.text.Length > 0)
+        {
+            answerDisplay.text = answerDisplay.text.Substring(0, answerDisplay.text.Length - 1);
         }
     }
 
@@ -114,25 +179,88 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler
         {
             case "+":
                 answer = oldValue + value;
+                oldValue = answer;
                 break;
             case "-":
                 answer = oldValue - value;
+                oldValue = answer;
                 break;
             case "x":
                 answer = oldValue * value;
+                oldValue = answer;
                 break;
             case "/":
                 answer = oldValue / value;
+                oldValue = answer;
+                break;
+            default:
+                answer = value;
                 break;
         }
-        op = "";
         answerDisplay.text = "";
         answerDisplay.text = answer.ToString();
+        opPerformed = false;
+        eqPerformed = true;
+        decFlag = false;
+        negFlag = false;
+        clearNext = true;
+        numPressed = false;
     }
-
+    public void clickType()
+    {
+        string ObjText = EventSystem.current.currentSelectedGameObject.GetComponentInChildren<Text>().text;
+        if (int.TryParse(ObjText, out int n))
+        {
+            Debug.Log("Gonna number click");
+            numberClick();
+        }
+        else if (ObjText.Contains("+") || ObjText.Contains("-") || ObjText.Contains("/") || ObjText.Contains("x"))
+        {
+            Debug.Log("Gonna operation click");
+            operationClick();
+        }
+        else if (ObjText.Contains("DEL"))
+        {
+            deleteClick();
+        }
+        else if (ObjText.Contains("CLEAR"))
+        {
+            clearClick();
+        }
+        else if (ObjText.Contains("."))
+        {
+            decimalClick();
+        }
+        else if (ObjText.Contains("="))
+        {
+            Debug.Log("Gonna equal click");
+            equalClick();
+        }
+    }
     // Update is called once per frame
     void Update()
     {
-        
+        maxTime = 1;
+        if (hovering)
+        {
+            Debug.Log("is progress less than max time?");
+            Debug.Log(progress);
+            Debug.Log(maxTime);
+            if (progress < maxTime)
+            {
+                progress += Time.deltaTime;
+                //progressBar.fillAmount = progress / maxTime;
+                Debug.Log("progress: " + progress);
+            }
+            else
+            {
+                succ = true;
+                hovering = false;
+                progress = 0.0f;
+                clickType();
+            }
+        }
     }
 }
+
+
