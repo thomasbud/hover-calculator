@@ -15,6 +15,7 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public static double answer;
     public double progress;
     public double maxTime;
+    public Image progressBar;
     public static bool opPerformed;
     public static bool eqPerformed;
     public static bool decFlag;
@@ -34,6 +35,7 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         progress = 0.0;
         maxTime = 10.0;
         op = "";
+        progressBar.fillAmount = 0;
         rend = GetComponent<Renderer>();
     }
     public void OnPointerEnter(PointerEventData eventData)
@@ -45,7 +47,8 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void OnPointerExit(PointerEventData eventData)
     {
         hovering = false;
-        progress = 0.0f;
+        //progress = 0.0f;
+        //progressBar.fillAmount = 0;
     }
 
     // ...the red fades out to cyan as the mouse is held over...
@@ -249,7 +252,7 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             if (progress < maxTime)
             {
                 progress += Time.deltaTime;
-                //progressBar.fillAmount = progress / maxTime;
+                progressBar.fillAmount = (float)(progress / maxTime);
                 Debug.Log("progress: " + progress);
             }
             else
@@ -257,8 +260,13 @@ public class Calculator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
                 succ = true;
                 hovering = false;
                 progress = 0.0f;
+                progressBar.fillAmount = 0;
                 clickType();
             }
+        }
+        if (!hovering && System.Math.Abs(progressBar.fillAmount) > 0.0) {
+            progress -= Time.deltaTime;
+            progressBar.fillAmount = (float)(progress / maxTime);
         }
     }
 }
